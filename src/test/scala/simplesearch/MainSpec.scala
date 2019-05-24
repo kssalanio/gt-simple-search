@@ -1,4 +1,4 @@
-package demo
+package simplesearch
 
 import org.scalatest._
 
