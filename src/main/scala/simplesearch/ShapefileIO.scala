@@ -30,6 +30,11 @@ import geotrellis.spark.{Metadata, SpatialKey, TileLayerMetadata}
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Json
 
+import org.apache.spark._
+import org.apache.spark.rdd._
+import org.apache.hadoop.fs.Path
+import geotrellis.spark.io.hadoop._
+
 //import simpletiler.Constants._
 //import simpletiler.UtilFunctions._
 
