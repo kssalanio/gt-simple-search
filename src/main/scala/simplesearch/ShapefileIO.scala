@@ -77,7 +77,7 @@ object ShapefileIO {
         numPartitions: Int)
       println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(features).toString)
       features.foreach{ ft=>
-        println(ft.getAttribute("NAME_2"))
+        println("FOUND FT: "+ft.getAttribute("NAME_2").toString)
       }
     }else{
       url = s"file://${new File(path).getAbsolutePath}"
