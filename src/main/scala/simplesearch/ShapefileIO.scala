@@ -33,6 +33,12 @@ import org.json4s.jackson.Json
 //import simpletiler.Constants._
 //import simpletiler.UtilFunctions._
 
+import java.io.File
+import java.net.{URI, URL}
+
+import scala.collection.mutable
+import simplesearch.HadoopShapefileRDD._
+
 
 object ShapefileIO {
   def readShapefileFromFilepath(shp_path: String)
@@ -64,6 +70,8 @@ object ShapefileIO {
       val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
       while(ftItr.hasNext) simpleFeatures += ftItr.next()
       simpleFeatures.toList
+      println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(simpleFeatures).toString)
+
     } finally {
       ftItr.close
       ds.dispose
@@ -129,5 +137,21 @@ object ShapefileIO {
 //                               (implicit sc: SparkContext): RDD[MultiPolygonFeature[Map[String, Object]]] = {
                            (implicit sc: SparkContext): Unit = {
     implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
+    val shp_rdd : RDD[SimpleFeature] = createSimpleFeaturesRDD(sc, Array(shp_path), Constants.RDD_PARTS)
   }
+
+
+  // The goal of this method is to allow for URL-based look-ups.
+  //  This allows for us to ingest files from HDFS and S3.
+  //TODO:: DEBUG!!
+//  def getShapefileDatastore(shapefilePath: String): FileDataStore = {
+//    // NOTE this regex is designed to work for s3a, s3n, etc.
+//    if (shapefilePath.matches("""\w{3,4}:\/\/.*$""")) {
+//      DataStoreFinder.getDataStore(Map("url" -> shapefilePath)).asInstanceOf[FileDataStore]
+//    } else {
+//      FileDataStoreFinder.getDataStore(new File(shapefilePath))
+//    }
+//  }
+
+
 }

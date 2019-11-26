@@ -44,8 +44,8 @@ resolvers ++= Seq(
   "Boundless Repository" at "http://repo.boundlessgeo.com/main/",
 //  "GeoMajas" at "http://maven.geomajas.org/",
   "efarmer" at "http://dev.efarmer.mobi:8889/repository/internal/",
-  "locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
-  "locationtech-snapshots" at "https://repo.locationtech.org/content/groups/snapshots",
+    "locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
+  "locationtech-snapshots" at "https://repo.locationtech.org/content/groups/snapshots"
 //  Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
 )
 
@@ -56,6 +56,7 @@ libraryDependencies ++= Seq(
   "org.locationtech.geotrellis" %% "geotrellis-shapefile" % "2.1.0",
 
   "org.apache.spark" %% "spark-core" % "2.3.1",
+//  "org.apache.spark" %% "spark-core" % "2.2.0",
 //  "org.apache.hadoop" %% "hadoop-client"         % "2.7.7",
 
   "com.lihaoyi" %% "pprint" % "0.4.3",

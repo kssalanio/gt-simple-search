@@ -20,9 +20,9 @@ object Main {
       *
       *# -- MONITORING -- #
       *spark.eventLog.enabled            true
-      *spark.eventLog.dir                hdfs://sh-master:9000/spark-logs
+      *spark.eventLog.dir                /home/ubuntu/spark-logs
       *spark.history.provider            org.apache.spark.deploy.history.FsHistoryProvider
-      *spark.history.fs.logDirectory     hdfs://sh-master:9000/spark-logs
+      *spark.history.fs.logDirectory     /home/ubuntu/spark-logs
       *spark.history.fs.update.interval  3s
       *spark.history.ui.port             18080
       *spark.ui.enabled                  true
@@ -72,7 +72,9 @@ object Main {
 
 
       args(0) match {
-        case "read" => readShapefileFromFilepath(
+//        case "read" => readShapefileFromFilepath(
+//          args(2))
+        case "read" => readSimpleFeatures(
           args(2))
         case "test_shp" => writeShapefileIntoFilepath(
           args(2), args(3), args(4))
