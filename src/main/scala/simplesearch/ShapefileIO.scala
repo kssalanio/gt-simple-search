@@ -67,10 +67,11 @@ object ShapefileIO {
     if(path contains "hdfs"){
       var paths = Array(path)
       var numPartitions = 10;
-      createSimpleFeaturesRDD(sc: SparkContext,
+      var features = createSimpleFeaturesRDD(sc: SparkContext,
         paths: Array[String],
         numPartitions: Int)
-      return
+      println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(features).toString)
+
     }else{
       url = s"file://${new File(path).getAbsolutePath}"
     }
