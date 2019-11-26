@@ -185,6 +185,7 @@ object ShapefileIO {
                                numPartitions: Int
                              ): RDD[SimpleFeature] = {
     val urls = sc.parallelize(paths, numPartitions).map { new URL(_) }
+    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
 
     urls.flatMap { url =>
       val ds = new ShapefileDataStore(url)
