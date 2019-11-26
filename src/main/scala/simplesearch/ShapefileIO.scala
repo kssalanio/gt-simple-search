@@ -62,7 +62,13 @@ object ShapefileIO {
       | Copied for reference from geotrellis.shapefile
     """.stripMargin
     // Extract the features as GeoTools 'SimpleFeatures'
-    val url = s"file://${new File(path).getAbsolutePath}"
+    var url = ""
+    if(path contains "hdfs"){
+      url = path
+    }else{
+      url = s"file://${new File(path).getAbsolutePath}"
+    }
+
     val ds = new ShapefileDataStore(new URL(url))
     val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
 
