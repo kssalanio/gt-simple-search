@@ -76,23 +76,25 @@ object ShapefileIO {
         paths: Array[String],
         numPartitions: Int)
       println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(features).toString)
-
+      features.foreach{ ft=>
+        println(ft.getAttribute("NAME_2"))
+      }
     }else{
       url = s"file://${new File(path).getAbsolutePath}"
-    }
 
-    val ds = new ShapefileDataStore(new URL(url))
-    val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
+      val ds = new ShapefileDataStore(new URL(url))
+      val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
 
-    try {
-      val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
-      while(ftItr.hasNext) simpleFeatures += ftItr.next()
-      simpleFeatures.toList
-      println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(simpleFeatures).toString)
+      try {
+        val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
+        while(ftItr.hasNext) simpleFeatures += ftItr.next()
+        simpleFeatures.toList
+        println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(simpleFeatures).toString)
 
-    } finally {
-      ftItr.close
-      ds.dispose
+      } finally {
+        ftItr.close
+        ds.dispose
+      }
     }
   }
 
