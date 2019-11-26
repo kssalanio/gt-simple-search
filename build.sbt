@@ -35,12 +35,12 @@ javaOptions += "-Xmx4G"
 
 resolvers ++= Seq(
   DefaultMavenRepository,
+  "OSGeo Repository" at "http://download.osgeo.org/webdav/geotools/",
   Resolver.bintrayRepo("bkirwi", "maven"), // Required for `decline` dependency
   Resolver.bintrayRepo("azavea", "maven"),
   Resolver.bintrayRepo("azavea", "geotrellis"),
   Resolver.sonatypeRepo("releases"),
   Resolver.sonatypeRepo("snapshots"),
-  "OSGeo Repository" at "http://download.osgeo.org/webdav/geotools/",
   "Boundless Repository" at "http://repo.boundlessgeo.com/main/",
 //  "GeoMajas" at "http://maven.geomajas.org/",
   "efarmer" at "http://dev.efarmer.mobi:8889/repository/internal/",
@@ -57,6 +57,7 @@ libraryDependencies ++= Seq(
 
   "org.apache.spark" %% "spark-core" % "2.3.1",
 //  "org.apache.spark" %% "spark-core" % "2.2.0",
+//  "org.apache.hadoop" %% "hadoop-client"         % "2.7.5",
 //  "org.apache.hadoop" %% "hadoop-client"         % "2.7.7",
 
   "com.lihaoyi" %% "pprint" % "0.4.3",
