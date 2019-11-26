@@ -57,14 +57,20 @@ object ShapefileIO {
     return sc.parallelize(features)
   }
 
-  def readSimpleFeatures(path: String) = {
+  def readSimpleFeatures(path: String)
+                        (implicit sc: SparkContext) = {
     """
       | Copied for reference from geotrellis.shapefile
     """.stripMargin
     // Extract the features as GeoTools 'SimpleFeatures'
     var url = ""
     if(path contains "hdfs"){
-      url = path
+      var paths = Array(path)
+      var numPartitions = 10;
+      createSimpleFeaturesRDD(sc: SparkContext,
+        paths: Array[String],
+        numPartitions: Int)
+      return
     }else{
       url = s"file://${new File(path).getAbsolutePath}"
     }
@@ -159,5 +165,33 @@ object ShapefileIO {
 //    }
 //  }
 
+  def createSimpleFeaturesRDD(
+                               sc: SparkContext,
+                               uris: Array[URI],
+                               extensions: Seq[String],
+                               numPartitions: Int
+                             ): RDD[SimpleFeature] =
+    createSimpleFeaturesRDD(sc, HadoopUtils.listFiles(sc, uris, extensions), numPartitions)
 
+  def createSimpleFeaturesRDD(
+                               sc: SparkContext,
+                               paths: Array[String],
+                               numPartitions: Int
+                             ): RDD[SimpleFeature] = {
+    val urls = sc.parallelize(paths, numPartitions).map { new URL(_) }
+
+    urls.flatMap { url =>
+      val ds = new ShapefileDataStore(url)
+      val ftItr = ds.getFeatureSource.getFeatures.features
+
+      try {
+        val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
+        while(ftItr.hasNext) simpleFeatures += ftItr.next()
+        simpleFeatures.toList
+      } finally {
+        ftItr.close
+        ds.dispose
+      }
+    }
+  }
 }
