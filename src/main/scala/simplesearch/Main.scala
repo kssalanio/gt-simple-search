@@ -30,16 +30,16 @@ object Main {
       *
       */
     new SparkConf()
-      .setMaster("local[2]")
-      //.setMaster("spark://spark00:7077")
+      //.setMaster("local[2]")
+      .setMaster("spark://spark00:7077")
       .set("spark.submit.deployMode", "client")
       //.setMaster("local")
       .setAppName("Thesis")
       .set("spark.serializer",        classOf[KryoSerializer].getName)
       .set("spark.kryo.registrator",  classOf[KryoRegistrator].getName)
       .set("spark.yarn.am.memory", "1024m")
-      .set("spark.driver.memory", "1024m")
-      .set("spark.executor.memory", "1024m")
+      .set("spark.driver.memory", "2048m")
+      .set("spark.executor.memory", "2048m")
       .set("spark.executor.cores", "2")
       .set("spark.cores.max", "2")
       .set("spark.eventLog.enabled", "true")
@@ -52,6 +52,11 @@ object Main {
       .set("spark.driver.port","20002")
       .set("spark.driver.host","spark00")
 
+      /** TODO: Learn to add to KryoRegistrator all serializable classes declared
+        *  e.g. http://web.cs.ucla.edu/~harryxu/papers/nguyen-asplos18.pdf
+        *  use/build from geotrellis.spark.io.kryo.KryoRegistrator
+        *  TODO: or export JAR file to HDFS and use spark-submit to execute, it may be because
+        **///
     //.set("spark.default.parallelism", "2")
     //.set("spark.akka.frameSize", "512")
       .set("spark.kryoserializer.buffer.max", "1024m")
