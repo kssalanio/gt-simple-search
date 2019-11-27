@@ -1,7 +1,8 @@
 package simplesearch
 
 import org.apache.spark.{SparkConf, SparkContext}
-
+import org.apache.spark.serializer.KryoSerializer
+import geotrellis.spark.io.kryo.KryoRegistrator
 import scala.io.StdIn
 import simplesearch.ShapefileIO._
 
@@ -29,18 +30,18 @@ object Main {
       *
       */
     new SparkConf()
-      //.setMaster("yarn-cluster")
-      .setMaster("spark://spark00:7077")
+      .setMaster("local[2]")
+      //.setMaster("spark://spark00:7077")
       .set("spark.submit.deployMode", "client")
       //.setMaster("local")
       .setAppName("Thesis")
-      //      .set("spark.serializer",        classOf[KryoSerializer].getName)
-      //      .set("spark.kryo.registrator",  classOf[KryoRegistrator].getName)
-      .set("spark.yarn.am.memory", "3084m")
-      .set("spark.driver.memory", "3084m")
-      .set("spark.executor.memory", "3084m")
-      .set("spark.executor.cores", "6")
-      .set("spark.cores.max", "6")
+      .set("spark.serializer",        classOf[KryoSerializer].getName)
+      .set("spark.kryo.registrator",  classOf[KryoRegistrator].getName)
+      .set("spark.yarn.am.memory", "1024m")
+      .set("spark.driver.memory", "1024m")
+      .set("spark.executor.memory", "1024m")
+      .set("spark.executor.cores", "2")
+      .set("spark.cores.max", "2")
       .set("spark.eventLog.enabled", "true")
       .set("spark.eventLog.dir", "/home/ubuntu/spark-logs")
       .set("spark.history.provider", "org.apache.spark.deploy.history.FsHistoryProvider")
@@ -53,7 +54,8 @@ object Main {
 
     //.set("spark.default.parallelism", "2")
     //.set("spark.akka.frameSize", "512")
-    //.set("spark.kryoserializer.buffer.max.mb", "800m")
+      .set("spark.kryoserializer.buffer.max", "1024m")
+
   }
 
   def main(args: Array[String]): Unit = {

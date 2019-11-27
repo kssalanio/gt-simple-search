@@ -77,7 +77,8 @@ object ShapefileIO {
         numPartitions: Int)
       println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(features).toString)
       features.foreach{ ft=>
-        println("FOUND FT: "+ft.getAttribute("NAME_2").toString)
+        //println("FOUND FT: "+ft.getAttribute("NAME_2").toString)
+        println(">>> "+SizeEstimator.estimate(ft).toString)
       }
     }else{
       url = s"file://${new File(path).getAbsolutePath}"
@@ -187,7 +188,7 @@ object ShapefileIO {
                                numPartitions: Int
                              ): RDD[SimpleFeature] = {
     val urls = sc.parallelize(paths, numPartitions).map { new URL(_) }
-    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
+//    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
 
     urls.flatMap { url =>
       val ds = new ShapefileDataStore(url)

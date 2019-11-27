@@ -6,7 +6,8 @@ version := "0.2.0"
 
 scalaVersion := "2.11.12"
 
-organization := "ken.thesis"
+//organization := "ken.thesis"
+organization := "simplesearch"
 
 licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"))
 
@@ -50,12 +51,14 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
+  "org.scala-lang" % "scala-library" % "2.11.12",
   "org.locationtech.geotrellis" %% "geotrellis-spark" % "2.1.0",
   "org.locationtech.geotrellis" %% "geotrellis-proj4" % "2.1.0",
   "org.locationtech.geotrellis" %% "geotrellis-geotools" % "2.1.0",
   "org.locationtech.geotrellis" %% "geotrellis-shapefile" % "2.1.0",
 
-  "org.apache.spark" %% "spark-core" % "2.3.1",
+//  "org.apache.spark" %% "spark-core" % "2.3.1",
+  "org.apache.spark" %% "spark-core" % "2.3.1"  % Provided, // IMPORTANT NOTE: Use this when deploying on cluster mode rather than SBT run
 //  "org.apache.spark" %% "spark-core" % "2.2.0",
 //  "org.apache.hadoop" %% "hadoop-client"         % "2.7.5",
 //  "org.apache.hadoop" %% "hadoop-client"         % "2.7.7",
@@ -88,3 +91,7 @@ initialCommands in console := """
  |import geotrellis.spark.tiling._
  |import geotrellis.spark.util._
  """.stripMargin
+
+// set the main class for packaging the main jar
+mainClass in (Compile, packageBin) := Some("simplesearch.Main")
+
