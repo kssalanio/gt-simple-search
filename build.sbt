@@ -60,6 +60,7 @@ libraryDependencies ++= Seq(
 //  "org.apache.spark" %% "spark-core" % "2.3.1",
   "org.apache.spark" %% "spark-core" % "2.3.1"  % Provided, // IMPORTANT NOTE: Use this when deploying on cluster mode rather than SBT run
 //  "org.apache.spark" %% "spark-core" % "2.2.0",
+    "org.apache.hadoop" %% "hadoop-common"         % "2.7.3" % Provided,
 //  "org.apache.hadoop" %% "hadoop-client"         % "2.7.5",
 //  "org.apache.hadoop" %% "hadoop-client"         % "2.7.7",
 
