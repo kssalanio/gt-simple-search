@@ -30,10 +30,8 @@ import geotrellis.spark.{Metadata, SpatialKey, TileLayerMetadata}
 import org.json4s.DefaultFormats
 import org.json4s.jackson.Json
 
-import org.apache.spark._
-import org.apache.spark.rdd._
-import org.apache.hadoop.fs.Path
-import geotrellis.spark.io.hadoop._
+import org.apache.hadoop.fs.FsUrlStreamHandlerFactory
+import java.net.URL
 
 //import simpletiler.Constants._
 //import simpletiler.UtilFunctions._
@@ -187,6 +185,8 @@ object ShapefileIO {
                                paths: Array[String],
                                numPartitions: Int
                              ): RDD[SimpleFeature] = {
+    //Register Hadoop's Url handler. Standard Url handler won't know how to handle hdfs:// scheme.
+    URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory)
     val urls = sc.parallelize(paths, numPartitions).map { new URL(_) }
 //    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
 
