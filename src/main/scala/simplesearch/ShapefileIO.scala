@@ -187,8 +187,12 @@ object ShapefileIO {
                              ): RDD[SimpleFeature] = {
     //Register Hadoop's Url handler. Standard Url handler won't know how to handle hdfs:// scheme.
     URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory)
-    val urls = sc.parallelize(paths, numPartitions).map { new URL(_) }
-//    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
+    //val urls = sc.parallelize(paths, numPartitions).map { new URL(_) }
+    val urls = sc.parallelize(paths, numPartitions).mapPartitions { partition =>
+      URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory)
+      partition.map(new URL(_))
+    }
+
 
     urls.flatMap { url =>
       val ds = new ShapefileDataStore(url)
