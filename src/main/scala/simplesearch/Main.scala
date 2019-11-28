@@ -33,7 +33,7 @@ object Main {
       //.setMaster("local[2]")
       .setMaster("spark://spark00:7077")
       .set("spark.submit.deployMode", "client")
-      //.setMaster("local")
+      //.set("spark.submit.deployMode", "cluster")
       .setAppName("Thesis")
       .set("spark.serializer",        classOf[KryoSerializer].getName)
       .set("spark.kryo.registrator",  classOf[KryoRegistrator].getName)
@@ -51,6 +51,7 @@ object Main {
       .set("spark.ui.enabled", "true")
       .set("spark.driver.port","20002")
       .set("spark.driver.host","spark00")
+      .set("spark.sql.defaultUrlStreamHandlerFactory.enabled","true")
 
       /** TODO: Learn to add to KryoRegistrator all serializable classes declared
         *  e.g. http://web.cs.ucla.edu/~harryxu/papers/nguyen-asplos18.pdf
