@@ -70,8 +70,14 @@ object Main {
 
 //    implicit val sc = new SparkContext(createAllSparkConf())
     implicit val sc = new SparkContext()
-    val sparkconf :SparkConf = sc.getConf;
+    var sparkconf :SparkConf = sc.getConf;
+
+    println("Proper registrator names: \n[" + classOf[KryoSerializer].getName +"]\n["+classOf[KryoRegistrator].getName+"]")
     println("Spark Config: \n" + sparkconf.toDebugString)
+    sparkconf
+      .set("spark.serializer",        classOf[KryoSerializer].getName)
+      .set("spark.kryo.registrator",  classOf[KryoRegistrator].getName)
+      .set("spark.kryoserializer.buffer.max", "1024m")
     //
 //    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
 
