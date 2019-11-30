@@ -68,8 +68,12 @@ object Main {
     //Initialize
     println("\n\n>>> INITIALIZING <<<\n\n")
 
-    implicit val sc = new SparkContext(createAllSparkConf())
-    //    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
+//    implicit val sc = new SparkContext(createAllSparkConf())
+    implicit val sc = new SparkContext()
+    val sparkconf :SparkConf = sc.getConf;
+    println("Spark Config: \n" + sparkconf.toDebugString)
+    //
+//    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
 
     val run_reps = args(1).toInt
 
