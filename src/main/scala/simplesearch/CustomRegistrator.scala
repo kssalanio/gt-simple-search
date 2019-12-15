@@ -18,6 +18,9 @@ import org.locationtech.geomesa.utils.conf.GeoMesaSystemProperties
 import org.locationtech.geomesa.utils.geotools.SimpleFeatureTypes
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 
+import collection.JavaConverters._
+import collection.mutable._
+
 import scala.collection.mutable.WrappedArray
 import scala.util.hashing.MurmurHash3
 
@@ -288,7 +291,7 @@ object CustomRegistrator {
       }
     }.orNull
 
-  def getTypes: Seq[SimpleFeatureType] = Seq(typeCache.values.toArray: _*)
+  def getTypes: Seq[SimpleFeatureType] = Seq(typeCache.values.asScala.toSeq: _*)
 
   def register(ds: DataStore): Unit = register(ds.getTypeNames.map(ds.getSchema))
 
