@@ -77,6 +77,7 @@ libraryDependencies ++= Seq(
 assemblyMergeStrategy in assembly := {
   case "reference.conf" => MergeStrategy.concat
   case "application.conf" => MergeStrategy.concat
+  case "META-INF/services/org.opengis.filter.expression.Function" => MergeStrategy.concat // Solves problem in https://sourceforge.net/p/geotools/mailman/message/36293742/
   case "META-INF/MANIFEST.MF" => MergeStrategy.discard
   case "META-INF\\MANIFEST.MF" => MergeStrategy.discard
   case "META-INF/ECLIPSEF.RSA" => MergeStrategy.discard
