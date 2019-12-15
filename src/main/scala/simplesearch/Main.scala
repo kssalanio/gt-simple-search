@@ -132,12 +132,14 @@ object Main {
     println("Spark Config: \n" + sparkconf.toDebugString)
 
     // Dummy RDD used for initializing SparkContext in executors
-    //var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))
+    //var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))\
+    /**
     var init_rdd : RDD[Int] = ContextKeeper.context.parallelize(createIntArray(num_executors))
     init_rdd.foreachPartition { partition =>
       //implicit val sc = ContextKeeper.context
       ContextKeeper.context
     }
+    */
 
     try {
 
