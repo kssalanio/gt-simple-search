@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 import scala.io.StdIn
 import simplesearch.ShapefileIO._
 
-object ContextKeeper extends Serializable {
+object ContextKeeper  {
   val conf = new SparkConf()
     .setAppName("SimpleSearch")
     //.setMaster("local[2]")
@@ -71,11 +71,11 @@ object Main {
       *
       */
     new SparkConf()
+      .setAppName("SimpleSearch")
       //.setMaster("local[2]")
       .setMaster("spark://spark00:7077")
       .set("spark.submit.deployMode", "client")
       //.set("spark.submit.deployMode", "cluster")
-      .setAppName("Thesis")
       .set("spark.sql.defaultUrlStreamHandlerFactory.enabled","true")
       .set("spark.serializer",        classOf[KryoSerializer].getName)
       .set("spark.kryo.registrator",  classOf[KryoRegistrator].getName)
@@ -99,10 +99,9 @@ object Main {
         *  use/build from geotrellis.spark.io.kryo.KryoRegistrator
         *  TODO: or export JAR file to HDFS and use spark-submit to execute, it may be because
         **///
-    //.set("spark.default.parallelism", "2")
-    //.set("spark.akka.frameSize", "512")
+      //.set("spark.default.parallelism", "2")
+      //.set("spark.akka.frameSize", "512")
       .set("spark.kryoserializer.buffer.max", "1024m")
-
   }
 
   def createIntArray(len: Int): Array[Int] = {
@@ -116,12 +115,6 @@ object Main {
     // Initializes context only for Spark Driver
 //    implicit val sc = new SparkContext(createAllSparkConf())
 //    implicit val sc = new SparkContext()
-    implicit val sc : SparkContext = ContextKeeper.context
-    var sparkconf :SparkConf = sc.getConf
-
-    println("Proper registrator names: \n[" + classOf[KryoSerializer].getName +"]\n["+classOf[KryoRegistrator].getName+"]")
-    println("Spark Config: \n" + sparkconf.toDebugString)
-
 
     //
 //    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
@@ -132,14 +125,19 @@ object Main {
     val run_reps = args(1).toInt
 
 
-    // Dummy RDD used for initializing SparkContext in executors
-    var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))
-    init_rdd.foreachPartition { partition =>
-      implicit val sc = ContextKeeper.context
-    }
-
     try {
+      implicit val sc : SparkContext = ContextKeeper.context
+      var sparkconf :SparkConf = sc.getConf
 
+      println("Proper registrator names: \n[" + classOf[KryoSerializer].getName +"]\n["+classOf[KryoRegistrator].getName+"]")
+      println("Spark Config: \n" + sparkconf.toDebugString)
+
+
+      // Dummy RDD used for initializing SparkContext in executors
+      var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))
+      init_rdd.foreachPartition { partition =>
+        implicit val sc = ContextKeeper.context
+      }
 
 
       args(2) match {
