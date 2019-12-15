@@ -121,6 +121,8 @@ object Main {
     println("ARGUMENTS:")
     pprint.pprintln(args)
 
+    var tmp_conf = createAllSparkConf()
+
     val num_executors = args(0).toInt
     val run_reps = args(1).toInt
     implicit val sc : SparkContext = ContextKeeper.context
@@ -134,7 +136,7 @@ object Main {
     init_rdd.foreachPartition { partition =>
       implicit val sc = ContextKeeper.context
     }
-    
+
     try {
 
 
