@@ -8,7 +8,7 @@ import org.apache.spark.rdd.RDD
 import scala.io.StdIn
 import simplesearch.ShapefileIO._
 
-object ContextKeeper {
+object ContextKeeper extends Serializable {
   val conf = new SparkConf()
     .setAppName("SimpleSearch")
     //.setMaster("local[2]")
