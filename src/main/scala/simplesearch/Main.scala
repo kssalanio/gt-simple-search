@@ -45,6 +45,10 @@ object ContextKeeper {
 
 }
 
+
+// Force the globals object to be initialized
+import ContextKeeper._
+
 object Main {
 
   def createAllSparkConf(): SparkConf = {
