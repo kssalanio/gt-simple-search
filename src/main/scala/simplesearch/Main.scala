@@ -123,21 +123,21 @@ object Main {
 
     val num_executors = args(0).toInt
     val run_reps = args(1).toInt
+    implicit val sc : SparkContext = ContextKeeper.context
+    var sparkconf :SparkConf = sc.getConf
 
+    println("Proper registrator names: \n[" + classOf[KryoSerializer].getName +"]\n["+classOf[KryoRegistrator].getName+"]")
+    println("Spark Config: \n" + sparkconf.toDebugString)
 
+    // Dummy RDD used for initializing SparkContext in executors
+    var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))
+    init_rdd.foreachPartition { partition =>
+      implicit val sc = ContextKeeper.context
+    }
+    
     try {
-      implicit val sc : SparkContext = ContextKeeper.context
-      var sparkconf :SparkConf = sc.getConf
-
-      println("Proper registrator names: \n[" + classOf[KryoSerializer].getName +"]\n["+classOf[KryoRegistrator].getName+"]")
-      println("Spark Config: \n" + sparkconf.toDebugString)
 
 
-      // Dummy RDD used for initializing SparkContext in executors
-      var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))
-      init_rdd.foreachPartition { partition =>
-        implicit val sc = ContextKeeper.context
-      }
 
 
       args(2) match {
