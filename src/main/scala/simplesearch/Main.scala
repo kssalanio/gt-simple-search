@@ -86,6 +86,8 @@ object Main {
 
     //
 //    implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
+    println("ARGUMENTS:")
+    pprint.pprintln(args)
 
     val num_executors = args(0).toInt
     val run_reps = args(1).toInt
@@ -99,8 +101,6 @@ object Main {
 
     try {
 
-      println("ARGUMENTS:")
-      pprint.pprintln(args)
 
 
       args(2) match {
