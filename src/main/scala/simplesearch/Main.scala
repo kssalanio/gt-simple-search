@@ -81,7 +81,7 @@ object Main {
     var sparkconf :SparkConf = sc.getConf
 
     println("Proper registrator names: \n[" + classOf[KryoSerializer].getName +"]\n["+classOf[KryoRegistrator].getName+"]")
-    println("Spark Config: \n" + sparkconf.toDebugString())
+    println("Spark Config: \n" + sparkconf.toDebugString)
 
 
     //
@@ -113,7 +113,7 @@ object Main {
         //        case "find" => run_read_find_feature(
         //          run_reps, args(3),args(4,args(5),args(6),args(7))
 
-        case _ => println("ERROR: Invalid first CLI argument")
+        case _ => println("ERROR: Invalid CLI arg(2)")
       }
       // Pause to wait to close the spark context,
       // so that you can check out the UI at http://localhost:4040
