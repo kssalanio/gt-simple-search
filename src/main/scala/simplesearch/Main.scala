@@ -125,16 +125,18 @@ object Main {
 
     val num_executors = args(0).toInt
     val run_reps = args(1).toInt
-    implicit val sc : SparkContext = ContextKeeper.context
-    var sparkconf :SparkConf = sc.getConf
+    //implicit val sc : SparkContext = ContextKeeper.context
+    var sparkconf :SparkConf = ContextKeeper.context.getConf
 
     println("Proper registrator names: \n[" + classOf[KryoSerializer].getName +"]\n["+classOf[KryoRegistrator].getName+"]")
     println("Spark Config: \n" + sparkconf.toDebugString)
 
     // Dummy RDD used for initializing SparkContext in executors
-    var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))
+    //var init_rdd : RDD[Int] = sc.parallelize(createIntArray(num_executors))
+    var init_rdd : RDD[Int] = ContextKeeper.context.parallelize(createIntArray(num_executors))
     init_rdd.foreachPartition { partition =>
-      implicit val sc = ContextKeeper.context
+      //implicit val sc = ContextKeeper.context
+      ContextKeeper.context
     }
 
     try {
@@ -146,9 +148,9 @@ object Main {
 //        case "read" => readShapefileFromFilepath(
 //          args(2))
         case "read" => readSimpleFeatures(
-          args(3))
+          args(3))(ContextKeeper.context)
         case "test_shp" => writeShapefileIntoFilepath(
-          args(3), args(4), args(5))
+          args(3), args(4), args(5))(ContextKeeper.context)
         //        case "find" => run_read_find_feature(
         //          run_reps, args(3),args(4,args(5),args(6),args(7))
 
@@ -163,7 +165,8 @@ object Main {
       println("Hit enter to exit.")
       StdIn.readLine()
     } finally {
-      sc.stop()
+      //sc.stop()
+      (ContextKeeper.context)
     }
   }
 }
