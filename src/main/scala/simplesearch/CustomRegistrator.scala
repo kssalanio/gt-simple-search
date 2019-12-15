@@ -304,7 +304,7 @@ object CustomRegistrator {
       val id = identifier(sft)
       val nameProp = (s"geomesa.types.$id.name", sft.getTypeName)
       val specProp = (s"geomesa.types.$id.spec", SimpleFeatureTypes.encodeType(sft))
-      Seq(nameProp, specProp)
+      collection.mutable.Seq(nameProp, specProp)
     }
   }
 

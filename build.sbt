@@ -44,7 +44,7 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   "Boundless Repository" at "http://repo.boundlessgeo.com/main/",
 //  "GeoMajas" at "http://maven.geomajas.org/",
-  "efarmer" at "http://dev.efarmer.mobi:8889/repository/internal/",
+//  "efarmer" at "http://dev.efarmer.mobi:8889/repository/internal/",
     "locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
   "locationtech-snapshots" at "https://repo.locationtech.org/content/groups/snapshots"
 //  Resolver.file("local", file(Path.userHome.absolutePath + "/.ivy2/local"))(Resolver.ivyStylePatterns)
