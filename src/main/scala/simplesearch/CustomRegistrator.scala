@@ -288,7 +288,7 @@ object CustomRegistrator {
       }
     }.orNull
 
-  def getTypes: Seq[SimpleFeatureType] = Seq(typeCache.values.toSeq: _*)
+  def getTypes: Seq[SimpleFeatureType] = Seq(typeCache.values.toArray: _*)
 
   def register(ds: DataStore): Unit = register(ds.getTypeNames.map(ds.getSchema))
 
