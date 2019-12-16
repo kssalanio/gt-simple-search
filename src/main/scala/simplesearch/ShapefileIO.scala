@@ -70,7 +70,7 @@ object ShapefileIO {
     if(path contains "hdfs"){
       //var paths = Array(path)
       var numPartitions = 10;
-      var features = createSimpleFeaturesRDD(sc: SparkContext,
+      var features :RDD[SimpleFeature] = createSimpleFeaturesRDD(sc: SparkContext,
         path: String,
         numPartitions: Int)
       println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(features).toString)
