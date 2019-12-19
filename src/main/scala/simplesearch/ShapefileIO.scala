@@ -14,16 +14,17 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.util.SizeEstimator
 import org.geotools.data.{DataStoreFinder, FeatureSource, FeatureWriter, Transaction}
 import org.apache.hadoop.fs
-import org.geotools.data.shapefile.ShapefileDataStore
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import org.geotools.data.shapefile.ShapefileDataStore
 import org.geotools.data.simple.{SimpleFeatureCollection, SimpleFeatureIterator, SimpleFeatureSource, SimpleFeatureStore}
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
-//import org.opengis.feature.simple._
-//import org.geotools.feature.simple._
-//import org.geotools.feature._
-//import org.opengis.feature.`type`.Name
+import org.geotools.data.simple._
+import org.opengis.feature.simple._
+import org.geotools.data.shapefile._
+import com.vividsolutions.jts.{geom => jts}
+
 import java.util.HashMap
 
 import geotrellis.spark.{Metadata, SpatialKey, TileLayerMetadata}
@@ -36,14 +37,40 @@ import org.apache.commons.io.IOUtils
 //import simpletiler.Constants._
 //import simpletiler.UtilFunctions._
 
-import java.io.File
+import geotrellis.vector._
+
+import org.geotools.data.simple._
+import org.opengis.feature.simple._
+import org.geotools.data.shapefile._
+import com.vividsolutions.jts.{geom => jts}
+
 import java.net.{URI, URL}
+import java.io.File
+
+import scala.collection.mutable
+import scala.collection.JavaConversions._
 
 import scala.collection.mutable
 import simplesearch.HadoopShapefileRDD._
 
 
 object ShapefileIO {
+  implicit class SimpleFeatureWrapper(ft: SimpleFeature) {
+    def geom[G <: jts.Geometry: Manifest]: Option[G] =
+      ft.getAttribute(0) match {
+        case g: G => Some(g)
+        case _ => None
+      }
+
+    def attributeMap: Map[String, Object] =
+      ft.getProperties.drop(1).map { p =>
+        (p.getName.toString, ft.getAttribute(p.getName))
+      }.toMap
+
+    def attribute[D](name: String): D =
+      ft.getAttribute(name).asInstanceOf[D]
+  }
+
   def readShapefileFromFilepath(shp_path: String)
                   (implicit sc: SparkContext): RDD[MultiPolygonFeature[Map[String, Object]]] = {
 
@@ -70,7 +97,7 @@ object ShapefileIO {
     if(path contains "hdfs"){
       //var paths = Array(path)
       var numPartitions = 10;
-      var features :RDD[SimpleFeature] = createSimpleFeaturesRDD(sc: SparkContext,
+      var features :RDD[SimpleFeature] = createMultiPolyFeatures(sc: SparkContext,
         path: String,
         numPartitions: Int)
       println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(features).toString)
@@ -123,7 +150,7 @@ object ShapefileIO {
 
     val out_ft_writer: FeatureWriter[SimpleFeatureType, SimpleFeature] = out_ds.getFeatureWriter(out_ds.getTypeNames()(0), Transaction.AUTO_COMMIT);
 
-    
+
     val geom_factory = new GeometryFactory()
 
     //TODO: Code for creating schema
@@ -209,7 +236,7 @@ object ShapefileIO {
       }
     }
   }
-  def createSimpleFeaturesRDD(
+  def createMultiPolyFeatures(
                                sc: SparkContext,
                                path: String,
                                numPartitions: Int
@@ -219,10 +246,12 @@ object ShapefileIO {
     val ds = new ShapefileDataStore(url)
     val ftItr = ds.getFeatureSource.getFeatures.features
 
+
     try {
       val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
       while(ftItr.hasNext) simpleFeatures += ftItr.next()
-      sc.parallelize(simpleFeatures.toList)
+      val mp_features : Seq[MultiPolygonFeature[Map[String, Object]]] = simpleFeatures.flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
+      sc.parallelize(mp_features)
     } finally {
       ftItr.close
       ds.dispose

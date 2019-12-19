@@ -57,7 +57,7 @@ libraryDependencies ++= Seq(
   "org.locationtech.geotrellis" %% "geotrellis-geotools" % "2.1.0",
   "org.locationtech.geotrellis" %% "geotrellis-shapefile" % "2.1.0",
 
-  "org.locationtech.geomesa" %% "geomesa-spark-core" % "2.1.0",
+  //"org.locationtech.geomesa" %% "geomesa-spark-core" % "2.1.0",
 
   "org.apache.spark" %% "spark-core" % "2.3.1"  % Provided, // IMPORTANT NOTE: Use this when deploying on cluster mode rather than SBT run
   "org.apache.hadoop" % "hadoop-common"         % "2.7.3" % Provided,
