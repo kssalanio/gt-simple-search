@@ -97,13 +97,14 @@ object ShapefileIO {
     if(path contains "hdfs"){
       //var paths = Array(path)
       var numPartitions = 10;
-      var features :RDD[SimpleFeature] = createMultiPolyFeatures(sc: SparkContext,
+      var features :RDD[MultiPolygonFeature[Map[String, Object]]] = createMultiPolyFeatures(sc: SparkContext,
         path: String,
         numPartitions: Int)
       println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(features).toString)
       features.foreach{ ft=>
         //println("FOUND FT: "+ft.getAttribute("NAME_2").toString)
-        println(">>> "+SizeEstimator.estimate(ft).toString)
+        ft.data
+        println(">>> "+ ft.data("NAME_2").toString + " -- " +SizeEstimator.estimate(ft).toString)
       }
     }else{
       url = s"file://${new File(path).getAbsolutePath}"
@@ -240,7 +241,7 @@ object ShapefileIO {
                                sc: SparkContext,
                                path: String,
                                numPartitions: Int
-                             ): RDD[SimpleFeature] = {
+                             ): RDD[MultiPolygonFeature[Map[String, Object]]] = {
     URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory)
     val url = new URL(path)
     val ds = new ShapefileDataStore(url)
