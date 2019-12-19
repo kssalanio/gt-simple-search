@@ -1,6 +1,8 @@
 package simplesearch
 
 
+import java.net.URL
+
 import geotrellis.proj4.CRS
 import geotrellis.spark._
 import geotrellis.spark.io.hadoop._
@@ -11,8 +13,6 @@ import geotrellis.raster.resample._
 import geotrellis.raster.io.geotiff._
 import geotrellis.spark.io.Intersects
 import geotrellis.util._
-
-
 import geotrellis.raster.MultibandTile
 import geotrellis.raster.resample.Bilinear
 import geotrellis.spark.{SpatialKey, TileLayerMetadata}
@@ -27,6 +27,8 @@ import simplesearch.Constants
 object RasterIO {
   def readGeotiffFromFilepath(raster_path: String)
                              (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] = {
+    val hdfs_url = new URL(raster_path)
+
     val input_rdd: RDD[(ProjectedExtent, MultibandTile)] =
       sc.hadoopMultibandGeoTiffRDD(raster_path)
 
@@ -45,7 +47,10 @@ object RasterIO {
 //    val tiled_rdd_meta: RDD[(SpatialKey, MultibandTile)] with TileLayerMetadata[SpatialKey] =
     val tiled_rdd_meta: MultibandTileLayerRDD[SpatialKey] =
       MultibandTileLayerRDD(tiled_rdd, rasterMetaData)
-
+    tiled_rdd_meta.foreach{ mbtl =>
+      val spatial_key = mbtl._1
+      println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
+    }
     return tiled_rdd_meta
   }
 }

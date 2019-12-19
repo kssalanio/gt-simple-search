@@ -7,6 +7,8 @@ import org.apache.spark.rdd.RDD
 
 import scala.io.StdIn
 import simplesearch.ShapefileIO._
+import simplesearch.RasterIO._
+
 
 object ContextKeeper  {
   val conf = new SparkConf()
@@ -150,12 +152,15 @@ object Main {
       args(2) match {
 //        case "read" => readShapefileFromFilepath(
 //          args(2))
-        case "read" => readSimpleFeatures(
+        case "read_shp" => readSimpleFeatures(
           args(3))(ContextKeeper.context)
         case "test_shp" => writeShapefileIntoFilepath(
           args(3), args(4), args(5))(ContextKeeper.context)
         //        case "find" => run_read_find_feature(
         //          run_reps, args(3),args(4,args(5),args(6),args(7))
+        case "read_gtiff" => readGeotiffFromFilepath(
+          args(3))(ContextKeeper.context)
+
 
         case _ => println("ERROR: Invalid CLI arg(2)")
       }
