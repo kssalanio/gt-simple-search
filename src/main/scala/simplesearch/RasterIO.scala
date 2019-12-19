@@ -22,12 +22,14 @@ import org.apache.spark.rdd.RDD
 import org.apache.hadoop.fs
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling.FloatingLayoutScheme
+import org.apache.hadoop.fs.FsUrlStreamHandlerFactory
 import simplesearch.Constants
 
 object RasterIO {
   def readGeotiffFromFilepath(raster_path: String)
                              (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] = {
-    val hdfs_url = new URL(raster_path)
+//    URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory)
+//    val hdfs_url = new URL(raster_path)
 
     val input_rdd: RDD[(ProjectedExtent, MultibandTile)] =
       sc.hadoopMultibandGeoTiffRDD(raster_path)

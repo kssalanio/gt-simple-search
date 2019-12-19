@@ -192,7 +192,6 @@ object ShapefileIO {
     val ds = new ShapefileDataStore(url)
     val ftItr = ds.getFeatureSource.getFeatures.features
 
-
     try {
       val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
       while(ftItr.hasNext) simpleFeatures += ftItr.next()
