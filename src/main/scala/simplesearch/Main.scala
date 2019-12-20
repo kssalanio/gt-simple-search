@@ -26,7 +26,7 @@ object ContextKeeper  {
     .set("spark.driver.memory", "2048m")
     .set("spark.executor.memory", "2048m")
     .set("spark.executor.cores", "2")
-    .set("spark.cores.max", "2")
+//    .set("spark.cores.max", "2")
     .set("spark.eventLog.enabled", "true")
     .set("spark.eventLog.dir", "/home/ubuntu/spark-logs")
     .set("spark.history.provider", "org.apache.spark.deploy.history.FsHistoryProvider")
