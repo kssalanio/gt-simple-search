@@ -55,58 +55,7 @@ import ContextKeeper._
 
 object Main {
 
-  def createAllSparkConf(): SparkConf = {
-    /**
-      * # -- MEMORY ALLOCATION -- #
-      *spark.master                   yarn
-      *spark.driver.memory            512m
-      *spark.yarn.am.memory           512m
-      *spark.executor.memory          512m
-      **
-      *
-      *# -- MONITORING -- #
-      *spark.eventLog.enabled            true
-      *spark.eventLog.dir                /home/ubuntu/spark-logs
-      *spark.history.provider            org.apache.spark.deploy.history.FsHistoryProvider
-      *spark.history.fs.logDirectory     /home/ubuntu/spark-logs
-      *spark.history.fs.update.interval  3s
-      *spark.history.ui.port             18080
-      *spark.ui.enabled                  true
-      *
-      */
-    new SparkConf()
-      .setAppName("SimpleSearch")
-      //.setMaster("local[2]")
-      .setMaster("spark://spark00:7077")
-      .set("spark.submit.deployMode", "client")
-      //.set("spark.submit.deployMode", "cluster")
-      .set("spark.sql.defaultUrlStreamHandlerFactory.enabled","true")
-      .set("spark.serializer",        classOf[KryoSerializer].getName)
-      .set("spark.kryo.registrator",  classOf[KryoRegistrator].getName)
-      .set("spark.yarn.am.memory", "1024m")
-      .set("spark.driver.memory", "2048m")
-      .set("spark.executor.memory", "2048m")
-      .set("spark.executor.cores", "2")
-      .set("spark.cores.max", "2")
-      .set("spark.eventLog.enabled", "true")
-      .set("spark.eventLog.dir", "/home/ubuntu/spark-logs")
-      .set("spark.history.provider", "org.apache.spark.deploy.history.FsHistoryProvider")
-      .set("spark.history.fs.logDirectory", "/home/ubuntu/spark-logs")
-      .set("spark.history.fs.update.interval", "3s")
-      .set("spark.history.ui.port", "18080")
-      .set("spark.ui.enabled", "true")
-      .set("spark.driver.port","20002")
-      .set("spark.driver.host","spark00")
 
-      /** TODO: Learn to add to KryoRegistrator all serializable classes declared
-        *  e.g. http://web.cs.ucla.edu/~harryxu/papers/nguyen-asplos18.pdf
-        *  use/build from geotrellis.spark.io.kryo.KryoRegistrator
-        *  TODO: or export JAR file to HDFS and use spark-submit to execute, it may be because
-        **///
-      //.set("spark.default.parallelism", "2")
-      //.set("spark.akka.frameSize", "512")
-      .set("spark.kryoserializer.buffer.max", "1024m")
-  }
 
   def createIntArray(len: Int): Array[Int] = {
     return Array[Int](len)
@@ -125,10 +74,10 @@ object Main {
     println("ARGUMENTS:")
     pprint.pprintln(args)
 
-    var tmp_conf = createAllSparkConf()
+    val wait_on_finish = args(0).toBoolean
+    val num_executors = args(1).toInt
+    val run_reps = args(2).toInt
 
-    val num_executors = args(0).toInt
-    val run_reps = args(1).toInt
     //implicit val sc : SparkContext = ContextKeeper.context
     var sparkconf :SparkConf = ContextKeeper.context.getConf
 
@@ -150,23 +99,23 @@ object Main {
 
 
 
-      args(2) match {
+      args(3) match {
 //        case "read" => readShapefileFromFilepath(
 //          args(2))
         case "read_shp" => readMultiPolygonFeatures(
-          args(3)) (ContextKeeper.context)
+          args(4)) (ContextKeeper.context)
         case "test_shp" => writeShapefileIntoFilepath(
-          args(3), args(4), args(5))(ContextKeeper.context)
+          args(4), args(5), args(6))(ContextKeeper.context)
         //        case "find" => run_read_find_feature(
         //          run_reps, args(3),args(4,args(5),args(6),args(7))
         case "read_gtiff" => readGeotiffFromFilepath(
-          args(3))(ContextKeeper.context)
+          args(4))(ContextKeeper.context)
 
         case "query_gtiff" => {
           val qry_ft_rdd = readMultiPolygonFeatures(
-            args(3))(ContextKeeper.context)
-          val input_gtiff = readGeotiffFromFilepath(
             args(4))(ContextKeeper.context)
+          val input_gtiff = readGeotiffFromFilepath(
+            args(5))(ContextKeeper.context)
           val result_gtiff_rdd = queryGeoTiffWithShpRDD(qry_ft_rdd, input_gtiff)(ContextKeeper.context)
           // Prints out Spatial Keys
           result_gtiff_rdd.foreach{ mbtl =>
@@ -183,9 +132,10 @@ object Main {
 
       // Delete temp directory if it exists
       //if (tmp_dir.exists) tmp_dir.delete()
-
-      println("Hit enter to exit.")
-      StdIn.readLine()
+      if(wait_on_finish) {
+        println("Hit enter to exit.")
+        StdIn.readLine()
+      }
     } finally {
       //sc.stop()
       (ContextKeeper.context)
