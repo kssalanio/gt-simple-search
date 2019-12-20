@@ -1,6 +1,6 @@
 package simplesearch
 
-import simplesearch.HadoopUtils
+import simplesearch.SimpleSearchUtils
 import geotrellis.spark.io.hadoop._
 import org.geotools.data.simple
 import org.geotools.data.shapefile._
@@ -23,7 +23,7 @@ object HadoopShapefileRDD {
                                extensions: Seq[String],
                                numPartitions: Int
                              ): RDD[SimpleFeature] =
-    createSimpleFeaturesRDD(sc, HadoopUtils.listFiles(sc, uris, extensions), numPartitions)
+    createSimpleFeaturesRDD(sc, SimpleSearchUtils.listFiles(sc, uris, extensions), numPartitions)
 
   def createSimpleFeaturesRDD(
                                sc: SparkContext,

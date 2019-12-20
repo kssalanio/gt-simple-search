@@ -1,14 +1,18 @@
 package simplesearch
 
+import geotrellis.spark.{MultibandTileLayerRDD, SpatialKey}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.serializer.KryoSerializer
 import geotrellis.spark.io.kryo.KryoRegistrator
 import org.apache.spark.rdd.RDD
+import org.apache.spark.util.SizeEstimator
 
 import scala.io.StdIn
 import simplesearch.ShapefileIO._
 import simplesearch.RasterIO._
 import simplesearch.SimpleTileIndexQuery._
+
+import scala.compat.java8.collectionImpl.LongAccumulator
 
 
 object ContextKeeper  {
@@ -93,6 +97,7 @@ object Main {
       ContextKeeper.context
     }
     */
+    val time_acc = ContextKeeper.context.longAccumulator("Timer Accumulator")
 
     try {
 
@@ -104,20 +109,55 @@ object Main {
 //          args(2))
         case "read_shp" => readMultiPolygonFeatures(
           args(4)) (ContextKeeper.context)
+
         case "test_shp" => writeShapefileIntoFilepath(
           args(4), args(5), args(6))(ContextKeeper.context)
         //        case "find" => run_read_find_feature(
         //          run_reps, args(3),args(4,args(5),args(6),args(7))
-        case "read_gtiff" => readGeotiffFromFilepath(
-          args(4))(ContextKeeper.context)
 
-        case "query_gtiff" => {
-          val qry_ft_rdd = readMultiPolygonFeatures(
-            args(4))(ContextKeeper.context)
+        case "read_gtiff" => readGeotiffFromFilepath(
+          args(4))(ContextKeeper.context, time_acc)
+
+        case "query_gtiff_w_shp" => {
+          val t_start = System.currentTimeMillis
+          val qry_ft = createMultiPolyFeatures(
+            args(4), Constants.RDD_PARTS)(0)
+          val t_end = System.currentTimeMillis
+          time_acc.add(t_start - t_end)
+          SingleLogging.log_metric("TIME_ACC", time_acc.value.toString)
+
           val input_gtiff = readGeotiffFromFilepath(
-            args(5))(ContextKeeper.context)
-          val result_gtiff_rdd = queryGeoTiffWithShpRDD(qry_ft_rdd, input_gtiff)(ContextKeeper.context)
+            args(5))(ContextKeeper.context, time_acc)
+          val result_gtiff_rdd : MultibandTileLayerRDD[SpatialKey] = queryGeoTiffWithShp(qry_ft, input_gtiff)(ContextKeeper.context, time_acc)
           // Prints out Spatial Keys
+          result_gtiff_rdd.foreach{ mbtl =>
+            val spatial_key = mbtl._1
+            println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
+          }
+        }
+
+        case "query_gtiff_w_shp_rdd" => {
+          val (qry_ft_rdd, nanotime_1) = SimpleSearchUtils.measureNanoTime(readMultiPolygonFeatures(
+            args(4))(ContextKeeper.context))
+
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATRUES", nanotime_1.toString)
+          SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES",SizeEstimator.estimate(qry_ft_rdd).toString)
+
+
+          val (input_gtiff, nanotime_2) = SimpleSearchUtils.measureNanoTime(readGeotiffFromFilepath(
+            args(5))(ContextKeeper.context, time_acc))
+
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_GEOTIFF", nanotime_2.toString)
+          SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF",SizeEstimator.estimate(input_gtiff).toString)
+
+          val (result_gtiff_rdd, nanotime_3) = SimpleSearchUtils.measureNanoTime(queryGeoTiffWithShpRDD(qry_ft_rdd, input_gtiff)
+            (ContextKeeper.context, time_acc))
+
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_GEOTIFF", nanotime_3.toString)
+          SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF",SizeEstimator.estimate(result_gtiff_rdd).toString)
+
+          // Prints out Spatial Keys
+          SingleLogging.log_metric("COUNT_RESULT_RDD", result_gtiff_rdd.count.toString)
           result_gtiff_rdd.foreach{ mbtl =>
             val spatial_key = mbtl._1
             println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")

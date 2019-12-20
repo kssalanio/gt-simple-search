@@ -99,13 +99,11 @@ object ShapefileIO {
     if(path contains "hdfs"){
       //var paths = Array(path)
       var numPartitions = 10;
-      var mp_features :RDD[MultiPolygonFeature[Map[String, Object]]] = createMultiPolyFeatures(
+      var mp_features :RDD[MultiPolygonFeature[Map[String, Object]]] = sc.parallelize(
+        createMultiPolyFeatures(
         path: String,
-        numPartitions: Int) (sc: SparkContext)
-      println("METRIC: sizeEstimate - features: "+SizeEstimator.estimate(mp_features).toString)
-      mp_features.foreach{ ft=>
-        println(">>> "+ ft.data("NAME_2").toString + " -- " +SizeEstimator.estimate(ft).toString)
-      }
+        numPartitions: Int))
+
       mp_features
     }else { // Reads from File Path
       url = s"file://${new File(path).getAbsolutePath}"
@@ -186,7 +184,7 @@ object ShapefileIO {
   def createMultiPolyFeatures(
                                path: String,
                                numPartitions: Int
-                             )(implicit  sc: SparkContext): RDD[MultiPolygonFeature[Map[String, Object]]] = {
+                             ): Seq[MultiPolygonFeature[Map[String, Object]]] = {
     URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory)
     val url = new URL(path)
     val ds = new ShapefileDataStore(url)
@@ -195,8 +193,8 @@ object ShapefileIO {
     try {
       val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
       while(ftItr.hasNext) simpleFeatures += ftItr.next()
-      val mp_features : Seq[MultiPolygonFeature[Map[String, Object]]] = simpleFeatures.flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
-      sc.parallelize(mp_features)
+      simpleFeatures.flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
+
     } finally {
       ftItr.close
       ds.dispose

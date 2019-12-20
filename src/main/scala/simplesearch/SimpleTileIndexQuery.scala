@@ -2,46 +2,52 @@ package simplesearch
 
 import geotrellis.raster.MultibandTile
 import geotrellis.shapefile.ShapeFileReader
-import geotrellis.spark.{MultibandTileLayerRDD, SpatialKey}
+import geotrellis.spark.{MultibandTileLayerRDD, SpatialKey, _}
 import geotrellis.vector.{MultiPolygon, MultiPolygonFeature, ProjectedExtent}
 import org.apache.hadoop.fs
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import geotrellis.raster._
-import geotrellis.spark._
 import geotrellis.spark.io.Intersects
 import geotrellis.util._
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling.FloatingLayoutScheme
-import org.apache.spark.util.SizeEstimator
+import org.apache.spark.util.{LongAccumulator, SizeEstimator}
 
 object SimpleTileIndexQuery {
-  def queryGeoTiffWithShp(query_shp_path: String, src_gtiff_rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]])
-                         (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] ={
+  def queryGeoTiffWithShp(query_geom: MultiPolygon, src_gtiff_rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]])
+                         (implicit sc: SparkContext, time_acc: LongAccumulator): MultibandTileLayerRDD[SpatialKey] ={
     """
       |Input: Query SHP, Metadata SHP, Raster GTIFF
       |Output: Clipped Raster GTIFF, Clipped Metadata SHP
     """.stripMargin
-    val features = ShapeFileReader.readMultiPolygonFeatures(query_shp_path)
-    val query_geom: MultiPolygon = features.head.geom
+//    val features = ShapeFileReader.readMultiPolygonFeatures(query_shp_path)
+//    val query_geom: MultiPolygon = features.head.geom
 
-    val result_rdd: MultibandTileLayerRDD[SpatialKey] = src_gtiff_rdd.mask(query_geom)
+//    val result_rdd: MultibandTileLayerRDD[SpatialKey] = src_gtiff_rdd.mask(query_geom)
+
 
     // This uses geotrellis.spark.filter, not spark.rdd.RDD.filter
-    val result_rdd2 = src_gtiff_rdd.filter().where(Intersects(query_geom))
+    val query_geom_BC = sc.broadcast(query_geom)
+//    val mbt_with_m_rdd : RDD[(SpatialKey, MultibandTile)]= src_gtiff_rdd.filter().where(Intersects(query_geom_BC.value)).result
+    val mbt_with_m_rdd : RDD[(SpatialKey, MultibandTile)] = src_gtiff_rdd.filter{
+      case(sp_key: SpatialKey, mb_tile: MultibandTile) =>
+        sp_key.extent(src_gtiff_rdd.metadata.layout).intersects(query_geom_BC.value)
+    }
 
-//    val result_rdd3 = src_gtiff_rdd.filter {
+
+    //    val result_rdd3 = src_gtiff_rdd.filter {
 //      tile_ftr =>
 //        tile_ftr._1.extent.intersects(query_geom)
 ////      case (sp_key, mb_tile) =>
 ////        sp_key.extent(src_gtiff_rdd.metadata.layout).intersects(query_geom)
 //    }
-
-    return result_rdd
+    val masked_rdd = MultibandTileLayerRDD(mbt_with_m_rdd, src_gtiff_rdd.metadata).mask(query_geom_BC.value)
+    return masked_rdd
   }
 
   def queryGeoTiffWithShpRDD(query_shp_rdd: RDD[MultiPolygonFeature[Map[String, Object]]], src_gtiff_rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]])
-                         (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] ={
+                         (implicit sc: SparkContext, time_acc: LongAccumulator): MultibandTileLayerRDD[SpatialKey] ={
     """
       |Input: Query SHP, Metadata SHP, Raster GTIFF
       |Output: Clipped Raster GTIFF, Clipped Metadata SHP
@@ -56,6 +62,8 @@ object SimpleTileIndexQuery {
         tile_ftr._1.extent(src_gtiff_rdd.metadata.layout).intersects(qry_ft)
       }.foldLeft(true)(_ && _)
     }
+
+//    val cropped_rdd = result_rdd.stitch().mask(query_geom).crop(query_extents)
 
     return MultibandTileLayerRDD(result_rdd, src_gtiff_rdd.metadata)
   }
@@ -75,7 +83,7 @@ object SimpleTileIndexQuery {
 
   def createTiledInvertedIndex(tile_dir_path: String, run_rep: Int,
                                metadata_fts: RDD[MultiPolygonFeature[Map[String, Object]]], savefile_dirpath: String)
-                              (implicit sc : SparkContext): Unit ={
+                              (implicit sc : SparkContext, time_acc: LongAccumulator): Unit ={
     implicit val hdfs = fs.FileSystem.get(sc.hadoopConfiguration)
     //val json_files = getListOfFiles(tile_json_dir_path,List[String]("json"))
     val json_files_rdd = sc.wholeTextFiles(tile_dir_path)

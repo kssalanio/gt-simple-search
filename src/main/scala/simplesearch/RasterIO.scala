@@ -23,16 +23,20 @@ import org.apache.hadoop.fs
 import geotrellis.spark.io.hadoop._
 import geotrellis.spark.tiling.FloatingLayoutScheme
 import org.apache.hadoop.fs.FsUrlStreamHandlerFactory
+import org.apache.spark.util.LongAccumulator
 import simplesearch.Constants
+import simplesearch.SimpleSearchUtils
 
 object RasterIO {
   def readGeotiffFromFilepath(raster_path: String)
-                             (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] = {
+                             (implicit sc: SparkContext, time_acc: LongAccumulator): MultibandTileLayerRDD[SpatialKey] = {
 //    URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory)
 //    val hdfs_url = new URL(raster_path)
 
-    val input_rdd: RDD[(ProjectedExtent, MultibandTile)] =
-      sc.hadoopMultibandGeoTiffRDD(raster_path)
+    val (input_rdd: RDD[(ProjectedExtent, MultibandTile)], nanotime) =
+      SimpleSearchUtils.measureNanoTime(sc.hadoopMultibandGeoTiffRDD(raster_path))
+
+    SingleLogging.log_metric("GEOTIFF_READ_HDFS_NANOTIME", nanotime.toString)
 
     // Tiling layout to TILE_SIZE x TILE_SIZE grids
 //    val (_, rasterMetaData) =
