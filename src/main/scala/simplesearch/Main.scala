@@ -130,6 +130,8 @@ object Main {
 
           SingleLogging.log_metric("CREATE_RDD_NANOTIME_GEOTIFF", nanotime_2.toString)
           SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF", SizeEstimator.estimate(input_gtiff).toString)
+          // Temp debug count to input geotiff rdd
+          SingleLogging.log_metric("COUNT_RESULT_RDD", input_gtiff.count.toString)
 
           val (result_gtiff_rdd : MultibandTileLayerRDD[SpatialKey], nanotime_3) = SimpleSearchUtils.measureNanoTime(queryGeoTiffWithShp(qry_ft, input_gtiff)(ContextKeeper.context, time_acc))
 
