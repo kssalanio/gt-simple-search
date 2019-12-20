@@ -30,12 +30,12 @@ object SimpleTileIndexQuery {
     // This uses geotrellis.spark.filter, not spark.rdd.RDD.filter
     val result_rdd2 = src_gtiff_rdd.filter().where(Intersects(query_geom))
 
-    val result_rdd3 = src_gtiff_rdd.filter {
-      tile_ftr =>
-        tile_ftr._1.extent.intersects(query_geom)
-//      case (sp_key, mb_tile) =>
-//        sp_key.extent(src_gtiff_rdd.metadata.layout).intersects(query_geom)
-    }
+//    val result_rdd3 = src_gtiff_rdd.filter {
+//      tile_ftr =>
+//        tile_ftr._1.extent.intersects(query_geom)
+////      case (sp_key, mb_tile) =>
+////        sp_key.extent(src_gtiff_rdd.metadata.layout).intersects(query_geom)
+//    }
 
     return result_rdd
   }
@@ -49,7 +49,7 @@ object SimpleTileIndexQuery {
     val qry_shp_BC = sc.broadcast(query_shp_rdd.map { mp_ft =>
       mp_ft.geom
     }.collect.toSet)
-    
+
     val result_rdd = src_gtiff_rdd.filter {
       tile_ftr =>
       qry_shp_BC.value.map{ qry_ft =>
