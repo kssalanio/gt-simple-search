@@ -40,7 +40,7 @@ object SimpleTileIndexQuery {
     return result_rdd
   }
 
-  def queryGeoTiffWithShpRDD(query_shp_rdd: RDD[MultiPolygonFeature[Map[String, Object]]], src_gtiff_rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]]
+  def queryGeoTiffWithShpRDD(query_shp_rdd: RDD[MultiPolygonFeature[Map[String, Object]]], src_gtiff_rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]])
                          (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] ={
     """
       |Input: Query SHP, Metadata SHP, Raster GTIFF
