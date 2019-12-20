@@ -10,7 +10,7 @@ object Constants {
   val ResampleMethod = NearestNeighbor
 
   //val RDD_PARTS = 50
-  val RDD_PARTS = 40
+  val RDD_PARTS = 8
   val PAD_LENGTH = 8
   val SFC_LABEL_HILBERT="hilbert"
   val SFC_LABEL_ZORDER="zorder"

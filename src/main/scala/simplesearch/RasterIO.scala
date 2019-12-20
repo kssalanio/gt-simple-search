@@ -46,13 +46,15 @@ object RasterIO {
         .tileToLayout(rasterMetaData.cellType, rasterMetaData.layout, Bilinear)
         .repartition(Constants.RDD_PARTS)
 
-//    val tiled_rdd_meta: RDD[(SpatialKey, MultibandTile)] with TileLayerMetadata[SpatialKey] =
-    val tiled_rdd_meta: MultibandTileLayerRDD[SpatialKey] =
+    val tiled_rdd_meta: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]] =
+//    val tiled_rdd_meta: MultibandTileLayerRDD[SpatialKey] =
       MultibandTileLayerRDD(tiled_rdd, rasterMetaData)
-    tiled_rdd_meta.foreach{ mbtl =>
-      val spatial_key = mbtl._1
-      println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
-    }
+
+    // Prints out Spatial Keys
+//    tiled_rdd_meta.foreach{ mbtl =>
+//      val spatial_key = mbtl._1
+//      println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
+//    }
     return tiled_rdd_meta
   }
 }

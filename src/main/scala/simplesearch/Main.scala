@@ -8,6 +8,7 @@ import org.apache.spark.rdd.RDD
 import scala.io.StdIn
 import simplesearch.ShapefileIO._
 import simplesearch.RasterIO._
+import simplesearch.SimpleTileIndexQuery._
 
 
 object ContextKeeper  {
@@ -152,14 +153,27 @@ object Main {
       args(2) match {
 //        case "read" => readShapefileFromFilepath(
 //          args(2))
-        case "read_shp" => readSimpleFeatures(
-          args(3))(ContextKeeper.context)
+        case "read_shp" => readMultiPolygonFeatures(
+          args(3)) (ContextKeeper.context)
         case "test_shp" => writeShapefileIntoFilepath(
           args(3), args(4), args(5))(ContextKeeper.context)
         //        case "find" => run_read_find_feature(
         //          run_reps, args(3),args(4,args(5),args(6),args(7))
         case "read_gtiff" => readGeotiffFromFilepath(
           args(3))(ContextKeeper.context)
+
+        case "query_gtiff" => {
+          val qry_ft_rdd = readMultiPolygonFeatures(
+            args(3))(ContextKeeper.context)
+          val input_gtiff = readGeotiffFromFilepath(
+            args(3))(ContextKeeper.context)
+          val result_gtiff_rdd = queryGeoTiffWithShpRDD(qry_ft_rdd, input_gtiff)(ContextKeeper.context)
+          // Prints out Spatial Keys
+          result_gtiff_rdd.foreach{ mbtl =>
+            val spatial_key = mbtl._1
+            println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
+          }
+        }
 
 
         case _ => println("ERROR: Invalid CLI arg(2)")

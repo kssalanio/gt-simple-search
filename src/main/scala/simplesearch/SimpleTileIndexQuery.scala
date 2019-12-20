@@ -12,10 +12,11 @@ import geotrellis.spark._
 import geotrellis.spark.io.Intersects
 import geotrellis.util._
 import geotrellis.spark.io.hadoop._
+import geotrellis.spark.tiling.FloatingLayoutScheme
 import org.apache.spark.util.SizeEstimator
 
 object SimpleTileIndexQuery {
-  def queryGeoTiffWithShp(query_shp_path: String, src_gtiff_rdd: MultibandTileLayerRDD[SpatialKey])
+  def queryGeoTiffWithShp(query_shp_path: String, src_gtiff_rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]])
                          (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] ={
     """
       |Input: Query SHP, Metadata SHP, Raster GTIFF
@@ -23,12 +24,40 @@ object SimpleTileIndexQuery {
     """.stripMargin
     val features = ShapeFileReader.readMultiPolygonFeatures(query_shp_path)
     val query_geom: MultiPolygon = features.head.geom
+
     val result_rdd: MultibandTileLayerRDD[SpatialKey] = src_gtiff_rdd.mask(query_geom)
 
     // This uses geotrellis.spark.filter, not spark.rdd.RDD.filter
-    val result_rdd_2 = src_gtiff_rdd.filter().where(Intersects(query_geom))
+    val result_rdd2 = src_gtiff_rdd.filter().where(Intersects(query_geom))
+
+    val result_rdd3 = src_gtiff_rdd.filter {
+      tile_ftr =>
+        tile_ftr._1.extent.intersects(query_geom)
+//      case (sp_key, mb_tile) =>
+//        sp_key.extent(src_gtiff_rdd.metadata.layout).intersects(query_geom)
+    }
 
     return result_rdd
+  }
+
+  def queryGeoTiffWithShpRDD(query_shp_rdd: RDD[MultiPolygonFeature[Map[String, Object]]], src_gtiff_rdd: RDD[(SpatialKey, MultibandTile)] with Metadata[TileLayerMetadata[SpatialKey]]
+                         (implicit sc: SparkContext): MultibandTileLayerRDD[SpatialKey] ={
+    """
+      |Input: Query SHP, Metadata SHP, Raster GTIFF
+      |Output: Clipped Raster GTIFF, Clipped Metadata SHP
+    """.stripMargin
+    val qry_shp_BC = sc.broadcast(query_shp_rdd.map { mp_ft =>
+      mp_ft.geom
+    }.collect.toSet)
+    
+    val result_rdd = src_gtiff_rdd.filter {
+      tile_ftr =>
+      qry_shp_BC.value.map{ qry_ft =>
+        tile_ftr._1.extent(src_gtiff_rdd.metadata.layout).intersects(qry_ft)
+      }.foldLeft(true)(_ && _)
+    }
+
+    return MultibandTileLayerRDD(result_rdd, src_gtiff_rdd.metadata)
   }
 
 //  def queryFeaturesWithShp(query_shp_path: String, src_features_rdd: RDD[MultiPolygonFeature[Map[String, Object]]])
