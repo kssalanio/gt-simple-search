@@ -166,7 +166,7 @@ object Main {
           val qry_ft_rdd = readMultiPolygonFeatures(
             args(3))(ContextKeeper.context)
           val input_gtiff = readGeotiffFromFilepath(
-            args(3))(ContextKeeper.context)
+            args(4))(ContextKeeper.context)
           val result_gtiff_rdd = queryGeoTiffWithShpRDD(qry_ft_rdd, input_gtiff)(ContextKeeper.context)
           // Prints out Spatial Keys
           result_gtiff_rdd.foreach{ mbtl =>
