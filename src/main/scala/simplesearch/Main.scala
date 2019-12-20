@@ -122,7 +122,7 @@ object Main {
           val (qry_ft, nanotime_1) = SimpleSearchUtils.measureNanoTime(createMultiPolyFeatures(
             args(4), Constants.RDD_PARTS)(0))
 
-          SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATRUES", nanotime_1.toString)
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATURES", nanotime_1.toString)
           SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES", SizeEstimator.estimate(qry_ft).toString)
 
           val (input_gtiff, nanotime_2) = SimpleSearchUtils.measureNanoTime(readGeotiffFromFilepath(
@@ -148,7 +148,7 @@ object Main {
           val (qry_ft_rdd, nanotime_1) = SimpleSearchUtils.measureNanoTime(readMultiPolygonFeatures(
             args(4))(ContextKeeper.context))
 
-          SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATRUES", nanotime_1.toString)
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATURES", nanotime_1.toString)
           SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES", SizeEstimator.estimate(qry_ft_rdd).toString)
 
           val (input_gtiff, nanotime_2) = SimpleSearchUtils.measureNanoTime(readGeotiffFromFilepath(
@@ -156,6 +156,8 @@ object Main {
 
           SingleLogging.log_metric("CREATE_RDD_NANOTIME_GEOTIFF", nanotime_2.toString)
           SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF", SizeEstimator.estimate(input_gtiff).toString)
+          // Temp debug count to input geotiff rdd
+          SingleLogging.log_metric("COUNT_RESULT_RDD", input_gtiff.count.toString)
 
           val (result_gtiff_rdd, nanotime_3) = SimpleSearchUtils.measureNanoTime(queryGeoTiffWithShpRDD(qry_ft_rdd, input_gtiff)
             (ContextKeeper.context, time_acc))
