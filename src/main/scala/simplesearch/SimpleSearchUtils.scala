@@ -43,7 +43,7 @@ object SimpleSearchUtils {
     var rddSize = 0l
     val rows = rdd.collect()
     for (i <- 0 until rows.length) {
-      rddSize += SizeEstimator.estimate(rows.apply(i).asInstanceOf)
+      rddSize += SizeEstimator.estimate(rows.apply(i).asInstanceOf[AnyRef])
     }
 
     rddSize
