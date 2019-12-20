@@ -119,17 +119,25 @@ object Main {
           args(4))(ContextKeeper.context, time_acc)
 
         case "query_gtiff_w_shp" => {
-          val t_start = System.currentTimeMillis
-          val qry_ft = createMultiPolyFeatures(
-            args(4), Constants.RDD_PARTS)(0)
-          val t_end = System.currentTimeMillis
-          time_acc.add(t_start - t_end)
-          SingleLogging.log_metric("TIME_ACC", time_acc.value.toString)
+          val (qry_ft, nanotime_1) = SimpleSearchUtils.measureNanoTime(createMultiPolyFeatures(
+            args(4), Constants.RDD_PARTS)(0))
 
-          val input_gtiff = readGeotiffFromFilepath(
-            args(5))(ContextKeeper.context, time_acc)
-          val result_gtiff_rdd : MultibandTileLayerRDD[SpatialKey] = queryGeoTiffWithShp(qry_ft, input_gtiff)(ContextKeeper.context, time_acc)
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATRUES", nanotime_1.toString)
+          SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES", SizeEstimator.estimate(qry_ft).toString)
+
+          val (input_gtiff, nanotime_2) = SimpleSearchUtils.measureNanoTime(readGeotiffFromFilepath(
+            args(5))(ContextKeeper.context, time_acc))
+
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_GEOTIFF", nanotime_2.toString)
+          SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF", SizeEstimator.estimate(input_gtiff).toString)
+
+          val (result_gtiff_rdd : MultibandTileLayerRDD[SpatialKey], nanotime_3) = SimpleSearchUtils.measureNanoTime(queryGeoTiffWithShp(qry_ft, input_gtiff)(ContextKeeper.context, time_acc))
+
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_RESULT_GEOTIFF", nanotime_3.toString)
+          SingleLogging.log_metric("SIZEESTIMATE_RESULT_GEOTIFF",SizeEstimator.estimate(result_gtiff_rdd).toString)
+
           // Prints out Spatial Keys
+          SingleLogging.log_metric("COUNT_RESULT_RDD", result_gtiff_rdd.count.toString)
           result_gtiff_rdd.foreach{ mbtl =>
             val spatial_key = mbtl._1
             println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
@@ -141,20 +149,19 @@ object Main {
             args(4))(ContextKeeper.context))
 
           SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATRUES", nanotime_1.toString)
-          SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES",SizeEstimator.estimate(qry_ft_rdd).toString)
-
+          SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES", SizeEstimator.estimate(qry_ft_rdd).toString)
 
           val (input_gtiff, nanotime_2) = SimpleSearchUtils.measureNanoTime(readGeotiffFromFilepath(
             args(5))(ContextKeeper.context, time_acc))
 
           SingleLogging.log_metric("CREATE_RDD_NANOTIME_GEOTIFF", nanotime_2.toString)
-          SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF",SizeEstimator.estimate(input_gtiff).toString)
+          SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF", SizeEstimator.estimate(input_gtiff).toString)
 
           val (result_gtiff_rdd, nanotime_3) = SimpleSearchUtils.measureNanoTime(queryGeoTiffWithShpRDD(qry_ft_rdd, input_gtiff)
             (ContextKeeper.context, time_acc))
 
-          SingleLogging.log_metric("CREATE_RDD_NANOTIME_GEOTIFF", nanotime_3.toString)
-          SingleLogging.log_metric("SIZEESTIMATE_GEOTIFF",SizeEstimator.estimate(result_gtiff_rdd).toString)
+          SingleLogging.log_metric("CREATE_RDD_NANOTIME_RESULT_GEOTIFF", nanotime_3.toString)
+          SingleLogging.log_metric("SIZEESTIMATE_RESULT_GEOTIFF",SizeEstimator.estimate(result_gtiff_rdd).toString)
 
           // Prints out Spatial Keys
           SingleLogging.log_metric("COUNT_RESULT_RDD", result_gtiff_rdd.count.toString)
