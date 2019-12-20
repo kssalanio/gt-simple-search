@@ -6,7 +6,7 @@ rm -rf /home/ubuntu/git/gt-simple-search/target/ && ./sbt reload
 ./sbt update
 ./sbt assembly
 
-for i in spark00 spark01 spark02
+for i in $(cat nodes.lst)
 do 
     scp -pr /home/ubuntu/git/gt-simple-search/target/scala-2.11/simplesearch-assembly-0.2.0.jar  $i:~/spark/jars/
     ssh -tt $i ls -lah /home/ubuntu/spark/jars/simplesearch-assembly-0.2.0.jar
