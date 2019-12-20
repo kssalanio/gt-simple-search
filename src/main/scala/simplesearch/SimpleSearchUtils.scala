@@ -5,7 +5,9 @@ import org.apache.spark._
 import org.apache.hadoop.fs.Path
 import java.net.URI
 
-import org.apache.spark.util.LongAccumulator
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
+import org.apache.spark.util.{LongAccumulator, SizeEstimator}
 
 
 object SimpleSearchUtils {
@@ -37,4 +39,15 @@ object SimpleSearchUtils {
     val t2 = System.nanoTime
     (ret, t2 - t1)
   }
+
+  def getRDDSize[V](rdd: RDD[V]) : Long = {
+    var rddSize = 0l
+    val rows = rdd.collect()
+    for (i <- 0 until rows.length) {
+      rddSize += SizeEstimator.estimate(rows.apply(i).asInstanceOf)
+    }
+
+    rddSize
+  }
+
 }
