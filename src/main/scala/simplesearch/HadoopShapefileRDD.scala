@@ -23,7 +23,7 @@ object HadoopShapefileRDD {
                                extensions: Seq[String],
                                numPartitions: Int
                              ): RDD[SimpleFeature] =
-    createSimpleFeaturesRDD(sc, SimpleSearchUtils.listFiles(sc, uris, extensions), numPartitions)
+    createSimpleFeaturesRDD(sc, SimpleSearchUtils.hdfsListFiles(sc, uris, extensions), numPartitions)
 
   def createSimpleFeaturesRDD(
                                sc: SparkContext,
