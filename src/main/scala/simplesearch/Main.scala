@@ -48,7 +48,8 @@ object ContextKeeper  {
       **///
     //.set("spark.default.parallelism", "2")
     //.set("spark.akka.frameSize", "512")
-    .set("spark.kryoserializer.buffer.max", "1024m")
+    .set("spark.kryoserializer.buffer.max", "2048m")
+    .set("spark.driver.maxResultSize", "2048m")
   val context= new SparkContext(conf)
 
 }
