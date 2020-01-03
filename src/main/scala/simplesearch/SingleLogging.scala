@@ -23,6 +23,6 @@ object SingleLogging{
     }
 
     def log_metric(label:String, msg: String){
-      println(s"[${METRIC}]: ${label} -- ${msg}")
+      println(s"[${METRIC}], ${label}, ${msg}")
     }
 }
