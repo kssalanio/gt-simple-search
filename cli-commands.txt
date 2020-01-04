@@ -52,15 +52,26 @@ spark-submit -v hdfs:///user/spark/jars/simplesearch-assembly-0.2.0.jar --class 
 git pull && ./sbt "run read 1 hdfs://spark00:9000/user/spark/data/input/vector/mindoro_decomposed/victoria.shp" > simplesearch.out
 
 
-
+# rsync spark folder to all slaves
 for i in $(cat /home/ubuntu/spark/conf/slaves); do rsync -avzpr -P ~/spark/ $i:~/; done
+for i in $(cat /home/ubuntu/spark/conf/slaves); do ssh -tt $i "du -sh ~/spark"; done
+
+# delete older than 3 days
+find /path/to/files* -mtime +3 -exec rm {} \;
+find ~/spark/work/* -mtime +3 -exec rm {} \;
+for node in $(cat slaves.lst); do ssh -tt $node "find ~/spark/work/* -mtime +3 -exec rm {} \\"; done
+
+
 for i in $(cat /home/ubuntu/spark/conf/slaves); do scp -pr /home/ubuntu/downloads/scala-2.11.12/lib/scala-library.jar $i:~/spark/jars/; done
 
 # Overwrite hosts file in nodes.lst with master node's
 for node in $(cat nodes.lst); do scp /etc/hosts $node:~/; ssh -tt $node sudo mv ~/hosts /etc/; ssh -tt $node "cat /etc/hosts | grep spark06"; done
 
-# Copy hadoop config folder to all nodes
-for node in spark06 spark07 spark08; do scp -pr ~/hadoop/etc $inode:~/hadoop/; done
+# Copy master hadoop config folder to all slaves
+for node in $(cat slaves.lst); do scp -pr ~/hadoop/etc $node:~/hadoop/; done
+
+# Copy master spark config folder to all slaves
+for node in $(cat slaves.lst); do scp -pr ~/spark/conf $node:~/spark/; done
 
 spark-submit -v /home/ubuntu/jars/demo-assembly-0.2.0.jar --master "spark://spark00:9000/" --deploy-mode "client"
 
