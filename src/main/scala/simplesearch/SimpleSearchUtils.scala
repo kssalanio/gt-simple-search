@@ -49,4 +49,14 @@ object SimpleSearchUtils {
     rddSize
   }
 
+  def getSeqSize[V](data_seq: Seq[V]) : Long = {
+    var seqSize = 0l
+    //val rows = data_seq
+    for (i <- 0 until data_seq.length) {
+      seqSize += SizeEstimator.estimate(data_seq.apply(i).asInstanceOf[AnyRef])
+    }
+
+    seqSize
+  }
+
 }

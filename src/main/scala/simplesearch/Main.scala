@@ -126,7 +126,8 @@ object Main {
 
           SingleLogging.log_metric("CREATE_RDD_NANOTIME_MPFEATURES", nanotime_1.toString)
           SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES", SizeEstimator.estimate(qry_ft).toString)
-          
+          SingleLogging.log_metric("SIZEESTIMATE_MPFEATURES_2", SizeEstimator.estimate(qry_ft.asInstanceOf[AnyRef]).toString)
+
           val (input_gtiff, nanotime_2) = SimpleSearchUtils.measureNanoTime(readGeotiffFromFilepath(
             args(5))(ContextKeeper.context, time_acc))
 
