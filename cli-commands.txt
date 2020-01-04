@@ -1,0 +1,83 @@
+# Simple Tiling
+
+spark-submit -v simpletiler-assembly-0.0.1.jar \
+--master "local"
+tile \
+1 \
+/media/sf_data/input_data/SAR/geonode_sar_guimaras.tif \
+/media/sf_data/output_data/tiled/dump/simple_test/ \
+> ~/logs/test.log 2>&1
+
+
+HadoopGeoTiffRDD.spatialMultiband(path, HadoopGeoTiffRDD.Options(
+      tiffExtensions = tiffExtensions,
+      crs = crs
+    ))
+
+
+spark-submit -v simpletiler-assembly-0.0.1.jar \
+--master "local"
+./sbt "run tile 1 /home/ken/data/input_data/SAR/geonode_sar_guimaras.tif /home/ken/data/output_data/tiled/dump/simple_test/"
+
+/home/ken
+
+./sbt assembly && scp -prv /home/ken/Dev/workspaces/scala/gt-simple-tiler/target/scala-2.11/simpletiler-assembly-0.0.1.jar spark@node-00.spark:~/jars/
+./sbt assembly && scp -prv /home/ken/Dev/workspaces/scala/gt-simple-search/target/scala-2.11/simplesearch-assembly-0.2.0.jar ubuntu@spark00:~/jars/
+
+val filepath = "/media/sf_data/input_data/SAR/geonode_sar_guimaras.tif"
+val testfile=new java.io.File(
+      new java.io.File(".").getCanonicalFile,
+      filepath
+    )
+
+./sbt "run tile 1 /media/ken/data/input_data/tiled_raster/victorias_merge_25.tif /media/ken/data/output_data/dump/"
+
+./sbt "run-main com.ken.simpletiler.LogQuery"
+
+sudo mount --bind "/media/ken/Seagate Backup Plus Drive/Backups/Thesis/data" /media/ken/data
+
+
+example search: within date span, same SUC, same Sensor used
+
+./sbt "run read 1 /media/ken/Seagate/Backups/Thesis/data/input_data/vectors/reprojected/32651/mindoro/coverage/mindoro_coverage.shp"
+
+./sbt "run test_shp 1 /media/ken/Seagate/Backups/Thesis_Experiments/data/input_data/vectors/reprojected/32651/mindoro/coverage/mindoro_coverage.shp /media/ken/Seagate/Backups/Thesis_Experiments/data/output_data/dump/shp/mindoro_out.shp /media/ken/Seagate/Backups/Thesis_Experiments/data/input_data/vectors/reprojected/32651/mindoro/coverage/mindoro_coverage.shp"
+
+
+hdfs dfs -rm -f jars/simplesearch-assembly-0.2.0.jar && hdfs dfs -put /home/ubuntu/git/gt-simple-search/target/scala-2.11/simplesearch-assembly-0.2.0.jar jars/
+
+spark-submit -v hdfs:///user/spark/jars/simplesearch-assembly-0.2.0.jar --class simplesearch.Main --master "spark://spark00:9000/" --deploy-mode "client" read 1 hdfs:///user/spark/data/input/vector/mindoro_decomposed/sablayan.shp
+> ~/logs/test.log 2>&1
+
+git pull && ./sbt "run read 1 hdfs://spark00:9000/user/spark/data/input/vector/mindoro_decomposed/victoria.shp" > simplesearch.out
+
+
+
+for i in $(cat /home/ubuntu/spark/conf/slaves); do rsync -avzpr -P ~/spark/ $i:~/; done
+for i in $(cat /home/ubuntu/spark/conf/slaves); do scp -pr /home/ubuntu/downloads/scala-2.11.12/lib/scala-library.jar $i:~/spark/jars/; done
+
+# Overwrite hosts file in nodes.lst with master node's
+for node in $(cat nodes.lst); do scp /etc/hosts $node:~/; ssh -tt $node sudo mv ~/hosts /etc/; ssh -tt $node "cat /etc/hosts | grep spark06"; done
+
+# Copy hadoop config folder to all nodes
+for node in spark06 spark07 spark08; do scp -pr ~/hadoop/etc $inode:~/hadoop/; done
+
+spark-submit -v /home/ubuntu/jars/demo-assembly-0.2.0.jar --master "spark://spark00:9000/" --deploy-mode "client"
+
+
+#NOTE: spark jar directory is at [/home/ubuntu/spark/jars/]
+# Assembly and copy jar to all nodes
+git pull && rm -rf /home/ubuntu/git/gt-simple-search/target/ && ./sbt reload && ./sbt update && ./sbt assembly
+for i in spark00 spark01 spark02; do scp -pr /home/ubuntu/git/gt-simple-search/target/scala-2.11/simplesearch-assembly-0.2.0.jar  $i:~/spark/jars/; ls -lah /home/ubuntu/spark/jars/simplesearch-assembly-0.2.0.jar; done
+
+# Delete application log dirs
+for i in spark00 spark01 spark02; do ssh -tt $i rm -fv ~/spark-logs/* ; done
+
+
+# Execute via spark-submit
+spark-submit --deploy-mode client /home/ubuntu/spark/jars/simplesearch-assembly-0.2.0.jar false 2 1 read hdfs://spark00:9000/user/ubuntu/data/input/vector/mindoro_decomposed/sablayan.shp
+spark-submit --deploy-mode client /home/ubuntu/spark/jars/simplesearch-assembly-0.2.0.jar false 2 1 read_gtiff hdfs://spark00:9000/user/ubuntu/data/input/raster/geonode_sar_oriental_mindoro.tif
+
+spark-submit --deploy-mode client /home/ubuntu/spark/jars/simplesearch-assembly-0.2.0.jar false 2 1 query_gtiff_w_shp hdfs://spark00:9000/user/ubuntu/data/input/vector/mindoro_decomposed/sablayan.shp hdfs://spark00:9000/user/ubuntu/data/input/raster/geonode_sar_oriental_mindoro.tif
+
+
