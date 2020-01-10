@@ -1,5 +1,7 @@
 package simplesearch
 
+import geotrellis.raster.{MultibandTile, Raster}
+import geotrellis.raster.io.geotiff.GeoTiff
 import geotrellis.spark.{MultibandTileLayerRDD, SpatialKey}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.serializer.KryoSerializer
@@ -150,6 +152,11 @@ object Main {
             val spatial_key = mbtl._1
             println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
           }
+
+          // Write to HDFS
+          val raster_tile: Raster[MultibandTile] = result_gtiff_rdd.stitch // Correct so far
+          val output_gtif_path = "/home/ubuntu/downloads/result_stitched.tif"
+          GeoTiff(raster_tile, result_gtiff_rdd.metadata.crs).write(output_gtif_path)
         }
 
         case "query_gtiff_w_shp_rdd" => {
