@@ -16,7 +16,6 @@ import simplesearch.SimpleTileIndexQuery._
 
 import scala.compat.java8.collectionImpl.LongAccumulator
 
-
 object ContextKeeper  {
   val conf = new SparkConf()
     .setAppName("SimpleSearch")
@@ -153,10 +152,15 @@ object Main {
             println("Spatial Key: [" + spatial_key.row.toString + "," + spatial_key.col.toString+"]")
           }
 
-          // Write to HDFS
+          // Write result TIF to HDFS
+          val write_t1 = System.nanoTime
           val raster_tile: Raster[MultibandTile] = result_gtiff_rdd.stitch // Correct so far
+          val write_t2 = System.nanoTime
           val output_gtif_path = "/home/ubuntu/downloads/result_stitched.tif"
           GeoTiff(raster_tile, result_gtiff_rdd.metadata.crs).write(output_gtif_path)
+          val write_t3 = System.nanoTime
+          SingleLogging.log_metric("NANOTIME_STITCH_RDD", String.valueOf(write_t2-write_t1))
+          SingleLogging.log_metric("NANOTIME_WRITE_GTIFF", String.valueOf(write_t3-write_t2))
         }
 
         case "query_gtiff_w_shp_rdd" => {
